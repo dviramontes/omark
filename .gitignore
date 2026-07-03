@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Build outputs
+/omark
+/*.exe
+omark
+
+# reference code
+base/
+core/
+examples/
+
