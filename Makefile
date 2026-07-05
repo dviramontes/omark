@@ -1,10 +1,10 @@
-SRC := main.odin
+SRC := .
 BIN := omark
 
 .PHONY: build run clean fmt
 
 build:
-	odin build $(SRC) -file -out:$(BIN)
+	odin build $(SRC) -out:$(BIN)
 
 run: build
 	./$(BIN)

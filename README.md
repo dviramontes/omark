@@ -21,7 +21,15 @@ This project uses a Makefile setup copied from `../dragon_curve/`, adapted for t
 - `make clean` — remove built binary
 - `make fmt` — format `main.odin`
 
-## Next Steps
-- Define the parser architecture (tokens, AST, parser passes).
-- Start with basic block parsing (headings, paragraphs, code blocks).
-- Add tests for each markdown feature as it is introduced.
+### Markdown Support
+[Not full markdown](https://commonmark.org/) but enough for basic parsing. 
+
+#### Support
+- Headings
+- Paragraphs
+- Fenced code blocks 
+- Inline code
+- Bold / Italic
+- Unordered lists
+- Links
+- Blockquotes
