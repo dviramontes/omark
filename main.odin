@@ -14,15 +14,15 @@ main :: proc() {
 	mem.arena_init(&arena, backing_buffer)
 	allocator := mem.arena_allocator(&arena)
 
-	contents_as_string := read_markdown_file_contents(path)
+	contents_as_string := read_markdown_file_contents(path, allocator)
 	doc := parse(contents_as_string, allocator)
 	defer delete(doc.blocks)
 
 	fmt.printf("doc: %+v\n", doc)
 }
 
-read_markdown_file_contents :: proc(path: string) -> string {
-	data, err := os.read_entire_file(path, context.allocator)
+read_markdown_file_contents :: proc(path: string, allocator: mem.Allocator = context.allocator) -> string {
+	data, err := os.read_entire_file(path, allocator)
 	if err != os.ERROR_NONE {
 		fmt.eprintln("failed to read file: %v\n", err)
 		return ""
