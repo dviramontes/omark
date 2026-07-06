@@ -16,3 +16,5 @@ fmt:
 	@for f in ./*.odin; do \
 		[ -f "$$f" ] && odinfmt -w "$$f"; \
 	done
+test:
+	odin test $(SRC)

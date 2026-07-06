@@ -21,7 +21,10 @@ main :: proc() {
 	fmt.printf("doc: %+v\n", doc)
 }
 
-read_markdown_file_contents :: proc(path: string, allocator: mem.Allocator = context.allocator) -> string {
+read_markdown_file_contents :: proc(
+	path: string,
+	allocator: mem.Allocator = context.allocator,
+) -> string {
 	data, err := os.read_entire_file(path, allocator)
 	if err != os.ERROR_NONE {
 		fmt.eprintln("failed to read file: %v\n", err)
@@ -42,13 +45,20 @@ parse :: proc(contents: string, allocator: mem.Allocator = context.allocator) ->
 
 	pos := 0
 	for pos < len(contents) {
-		c := contents[pos]
-		if c == '\n' {
+		// skip newline characters
+		if contents[pos] == '\n' {
 			pos += 1
 			continue
 		}
-
-		block := parse_block(contents[pos:], allocator)
+		// run until we hit 2 newline characters or EOF
+		start := pos
+		for pos < len(contents) {
+			if contents[pos] == '\n' && (pos + 1 >= len(contents) || contents[pos + 1] == '\n') {
+				break
+			}
+			pos += 1
+		}
+		block := parse_block(contents[start:pos], allocator)
 		_, _ = append(&doc.blocks, block)
 		pos += 1
 	}
