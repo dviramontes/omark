@@ -13,4 +13,6 @@ clean:
 	rm -f $(BIN)
 
 fmt:
-	odinfmt -w $(SRC)
+	@for f in ./*.odin; do \
+		[ -f "$$f" ] && odinfmt -w "$$f"; \
+	done
