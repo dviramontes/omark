@@ -9,35 +9,75 @@ main :: proc() {
 	fmt.println("Hello from Omark!\n================")
 	path := "README.md"
 
-	// arena allocator for the AST
-	// allocates memory for the AST nodes
-	// pass the AST allocator into the parser functions
-
 	arena: mem.Arena
 	backing_buffer := make([]u8, 1024 * 1024)
 	mem.arena_init(&arena, backing_buffer)
 	allocator := mem.arena_allocator(&arena)
 
+	contents_as_string := read_markdown_file_contents(path)
+	doc := parse(contents_as_string, allocator)
+	defer delete(doc.blocks)
 
-	contents := read_markdown_file_contents(path)
-	nodes := parse(allocator, contents)
-	defer delete(nodes, allocator)
-	fmt.println("nodes: %v\n", nodes)
+	fmt.printf("doc: %+v\n", doc)
 }
 
-read_markdown_file_contents :: proc(path: string) -> []u8 {
+read_markdown_file_contents :: proc(path: string) -> string {
 	data, err := os.read_entire_file(path, context.allocator)
 	if err != os.ERROR_NONE {
 		fmt.eprintln("failed to read file: %v\n", err)
-		return nil
+		return ""
 	}
-	defer delete(data, context.allocator)
 
-	return data
+	return string(data)
 }
 
-parse :: proc(allocator: mem.Allocator, contents: []u8) -> []Node {
-	nodes := []Node{}
+parse :: proc(contents: string, allocator: mem.Allocator = context.allocator) -> Document_Node {
+	doc: Document_Node
+	doc.kind = .Document
+	doc.span = Source_Span {
+		start = 0,
+		end   = len(contents),
+	}
+	doc.blocks = make([dynamic]Block_Node, 0, allocator)
 
+	pos := 0
+	for pos < len(contents) {
+		c := contents[pos]
+		if c == '\n' {
+			pos += 1
+			continue
+		}
+
+		block := parse_block(contents[pos:], allocator)
+		_, _ = append(&doc.blocks, block)
+		pos += 1
+	}
+
+	return doc
+}
+
+parse_block :: proc(contents: string, allocator: mem.Allocator = context.allocator) -> Block_Node {
+	paragraph := Paragraph_Node {
+		kind = .Paragraph,
+		span = Source_Span{start = 0, end = len(contents)},
+	}
+
+	paragraph.inlines = parse_inline(contents, allocator)
+	return Block_Node(paragraph)
+}
+
+parse_inline :: proc(
+	contents: string,
+	allocator: mem.Allocator = context.allocator,
+) -> [dynamic]Inline_Node {
+	nodes := make([dynamic]Inline_Node, 0, 1, allocator)
+
+	text := Text_Node {
+		kind = .Text,
+		span = Source_Span{start = 0, end = len(contents)},
+		text = contents,
+	}
+
+	_, _ = append(&nodes, Inline_Node(text))
 	return nodes
 }
