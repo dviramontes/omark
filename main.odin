@@ -6,7 +6,7 @@ import "core:os"
 
 // Markdown in -> AST -> HTML out
 main :: proc() {
-	fmt.println("Hello from Omark!\n================")
+	fmt.println("Hello from Omark!\n================\n\n")
 	path := "README.md"
 
 	arena: mem.Arena
@@ -89,5 +89,15 @@ parse_inline :: proc(
 	}
 
 	_, _ = append(&nodes, Inline_Node(text))
+	// next i need to append the inline nodes to the document
+	// to the document's inline nodes
 	return nodes
+}
+
+// TODO: add a function to print the number of nodes and which types are found
+// for debugging purposes, print it as a table
+debug_print_nodes :: proc(nodes: [dynamic]Inline_Node) {
+	for node in nodes {
+		fmt.println(node)
+	}
 }
