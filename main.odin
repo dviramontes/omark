@@ -18,7 +18,7 @@ main :: proc() {
 	doc := parse(contents_as_string, allocator)
 	defer delete(doc.blocks)
 
-	fmt.printf("doc: %+v\n", doc)
+	fmt.printf("doc: %#v\n", doc)
 }
 
 read_markdown_file_contents :: proc(

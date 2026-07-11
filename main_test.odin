@@ -21,31 +21,40 @@ test_parse_block :: proc(t: ^testing.T) {
 
 @(test)
 test_parse_paragraph :: proc(t: ^testing.T) {
-	markdown := `lorem ipsum\n\nlorem ipsum`
+	markdown: string
+	markdown = `lorem ipsum\nlorem ipsum`
 
 	arena: mem.Arena
 	buffer := make([]byte, 1024 * 1024)
 	defer delete(buffer)
 	mem.arena_init(&arena, buffer)
+	doc: Document_Node
 
-	// document node
 	allocator := mem.arena_allocator(&arena)
-	parsed := parse(markdown, allocator)
-	testing.expect(t, parsed.kind == .Document, "expected document node")
-	testing.expect(t, len(parsed.blocks) == 1, "expected 1 block")
+	doc = parse(markdown, allocator)
 
-	// paragraph node
-	paragraph, ok := parsed.blocks[0].(Paragraph_Node)
-	testing.expect(t, ok, "expected paragraph node")
-	testing.expect(t, paragraph.kind == .Paragraph, "expected paragraph kind")
-	testing.expect(t, len(paragraph.inlines) == 1, "expected 1 inline")
-
-	// text node
-	text, text_ok :=  paragraph.inlines[0].(Text_Node)
-	log.infof("text: %+v", text)
+	paragraph, ok := doc.blocks[0].(Paragraph_Node)
+	text, text_ok := paragraph.inlines[0].(Text_Node)
+	testing.expect(t, len(doc.blocks) == 1, "expected 1 block")
 	testing.expect(t, text_ok, "expected text node")
 	testing.expect(t, text.kind == .Text, "expected text kind")
-	testing.expect(t, text.text == "lorem ipsum\\n\\nlorem ipsum", "expected text content")
+	testing.expect(t, text.text == `lorem ipsum\nlorem ipsum`, "expected text content")
+
+	markdown = "First.\n\nSecond." // two paragraph
+
+	doc = parse(markdown, allocator)
+	two, ok_two := doc.blocks[1].(Paragraph_Node)
+	testing.expect(t, len(doc.blocks) == 2, "expected 2 blocks")
+	text_two, text_ok_two := two.inlines[0].(Text_Node)
+	text_three, text_ok_three := two.inlines[1].(Text_Node)
+
+	testing.expect(t, ok_two, "expected paragraph node")
+	testing.expect(t, text_ok_two, "expected text node")
+	testing.expect(t, text_two.kind == .Text, "expected text kind")
+	testing.expect(t, text_two.text == `First.`, "expected text content")
+	testing.expect(t, text_ok_three, "expected text node")
+	testing.expect(t, text_three.kind == .Text, "expected text kind")
+	testing.expect(t, text_three.text == `Second.`, "expected text content")
 }
 
 @(test)
@@ -57,21 +66,11 @@ test_parse_inline :: proc(t: ^testing.T) {
 	defer delete(buffer)
 	mem.arena_init(&arena, buffer)
 
-	// document node
 	allocator := mem.arena_allocator(&arena)
 	parsed := parse(markdown, allocator)
-	testing.expect(t, parsed.kind == .Document, "expected document node")
-	testing.expect(t, len(parsed.blocks) == 1, "expected 1 block")
-
-	// paragraph node
 	paragraph, ok := parsed.blocks[0].(Paragraph_Node)
-	testing.expect(t, ok, "expected paragraph node")
-	testing.expect(t, paragraph.kind == .Paragraph, "expected paragraph kind")
-	testing.expect(t, len(paragraph.inlines) == 1, "expected 1 inline")
+	text, text_ok := paragraph.inlines[0].(Text_Node)
 
-	// text node
-	text, text_ok :=  paragraph.inlines[0].(Text_Node)
-	log.infof("text: %+v", text)
 	testing.expect(t, text_ok, "expected text node")
 	testing.expect(t, text.kind == .Text, "expected text kind")
 	testing.expect(t, text.text == "lorem *ipsum*", "expected text content")
