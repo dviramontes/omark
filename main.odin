@@ -82,6 +82,8 @@ parse_inline :: proc(
 ) -> [dynamic]Inline_Node {
 	nodes := make([dynamic]Inline_Node, 0, 1, allocator)
 
+	// TODO: next i need to append the inline nodes to the document
+	// to the document's inline nodes
 	text := Text_Node {
 		kind = .Text,
 		span = Source_Span{start = 0, end = len(contents)},
@@ -89,8 +91,7 @@ parse_inline :: proc(
 	}
 
 	_, _ = append(&nodes, Inline_Node(text))
-	// next i need to append the inline nodes to the document
-	// to the document's inline nodes
+
 	return nodes
 }
 

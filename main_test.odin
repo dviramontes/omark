@@ -55,7 +55,7 @@ test_parse_paragraph :: proc(t: ^testing.T) {
 	markdown = "First.\n\nSecond." // two paragraph
 
 	doc = parse(markdown, allocator)
-	testing.expect(t, len(doc.blocks) == 2, "expected 2 blocks")
+	testing.expect_value(t, len(doc.blocks), 2)
 	if len(doc.blocks) != 2 {
 		return
 	}
@@ -96,15 +96,40 @@ test_parse_inline :: proc(t: ^testing.T) {
 
 	allocator := mem.arena_allocator(&arena)
 	parsed := parse(markdown, allocator)
-	paragraph, ok := parsed.blocks[0].(Paragraph_Node)
-	if !ok {
-		testing.expect(t, ok, "expected paragraph node")
+	if !testing.expect_value(t, len(parsed.blocks), 1) {
 		return
 	}
-	text, text_ok := paragraph.inlines[0].(Text_Node)
-	
-	// log.infof("text: %#v", text.text)
-	testing.expect(t, text_ok, "expected text node")
+
+	paragraph, ok := parsed.blocks[0].(Paragraph_Node)
+	if !testing.expect(t, ok, "expected paragraph node") {
+		return
+	}
+
+	// Intended output: Text("lorem ") followed by Emphasis(Text("ipsum")).
+	if !testing.expect_value(t, len(paragraph.inlines), 2) {
+		return
+	}
+
+	text, ok_test := paragraph.inlines[0].(Text_Node)
+	if !testing.expect(t, ok_test, "expected leading text node") {
+		return
+	}
 	testing.expect(t, text.kind == .Text, "expected text kind")
-	testing.expect(t, text.text == "lorem *ipsum*", "expected text content")
+	testing.expect(t, text.text == "lorem ", "expected leading text content")
+
+	emphasis, ok_emphasis := paragraph.inlines[1].(Emphasis_Node)
+	if !testing.expect(t, ok_emphasis, "expected emphasis node") {
+		return
+	}
+	testing.expect(t, emphasis.kind == .Emphasis, "expected emphasis kind")
+	if !testing.expect_value(t, len(emphasis.children), 1) {
+		return
+	}
+
+	emphasized_text, ok_emphasized_text := emphasis.children[0].(Text_Node)
+	if !testing.expect(t, ok_emphasized_text, "expected emphasized text node") {
+		return
+	}
+	testing.expect(t, emphasized_text.kind == .Text, "expected emphasized text kind")
+	testing.expect_value(t, emphasized_text.text, "ipsum")
 }
