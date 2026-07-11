@@ -7,15 +7,17 @@ An Odin markdown parser project.
 
 ## Prerequisites
 - [Odin](https://odin-lang.org/) installed and available in your `PATH`.
+- [just](https://just.systems/) installed and available in your `PATH`.
 
 ## Development
 
 ### Commands
-- `make build`
-- `make run`
-- `make clean`
-- `make fmt`
-- `make test`
+- `just build`
+- `just run`
+- `just clean`
+- `just fmt`
+- `just test`
+- `just test-one parser_handle_x` — run a single test by name
 
 ### Markdown Support
 [Not full markdown](https://commonmark.org/) but enough for basic parsing. 
